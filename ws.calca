@@ -1,0 +1,68 @@
+# Mess with these values.
+count = 1
+
+
+waterPerc  = .75
+saltPerc   = .02
+wheatPerc  = 0
+leavenPerc = .2
+whitePerc  = 1.0 - wheatPerc
+
+Country bread: (water, leaven, flour, salt)
+ballWeight = 750 + 200 + 1000 + 20 => 1,970
+
+ballWeight = 1,970
+
+
+
+nonFlourPerc = (waterPerc + saltPerc + leavenPerc) => 0.97
+
+
+flourPercentageOfTotal = 1.0 / (1 + nonFlourPerc) => 0.5076
+
+flourG = ballWeight * flourPercentageOfTotal * count => 1,000
+
+
+saltG = flourG * saltPerc * count => 20
+waterG = flourG * waterPerc * count => 750
+leavenG = flourG * leavenPerc * count => 200
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# This is weights per ball.
+flourPB = (ballWeight * (waterPerc + saltPerc + leavenPerc)) => 1,910.9
+
+
+
+
+
+whiteFlourPB = flourPB * whitePerc => 1,910.9
+wheatFlourPB = flourPB * wheatPerc => 0
+waterPB = (flourPB * waterPerc) => 1,433.175
+saltPB = (flourPB * saltPerc) => 38.218
+
+# This is the part you pay attention to, when mixing ingredients.
+water = waterPB * pizzas => 1,433.175 pizzas
+salt = saltPB * pizzas => 38.218 pizzas
+wheatFlour = wheatFlourPB * pizzas => 0
+whiteFlour = whiteFlourPB * pizzas => 1,910.9 pizzas
+flour = flourPB * pizzas => 1,910.9 pizzas
+cristico = flour * .05 => 95.545 pizzas
+
