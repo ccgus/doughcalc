@@ -141,6 +141,15 @@
 				let fixedQuantity = quantity.toFixed(1) 
 				return fixedQuantity <= 0 ? "" : "<span class=\"measure\">" + fixedQuantity + "</span> gr of " + unit;
 			}
+			
+			function fToC(degreesF) {
+				return (degreesF-32)/1.8
+			}
+			
+			function formattedTemperature(degreesF, unit) {
+				const value = (unit == "ºC") ? fToC(degreesF) : degreesF
+				return Number.parseFloat(value).toFixed(1) + unit				
+			}
             
     		function recalc() {
         		
@@ -231,6 +240,15 @@
                 tableVis("finalOtherRow",      otherG > 0);
                 tableVis("finalTriviaRow",     showTrivia);
                 
+				
+				const temperatureValues = document.getElementsByClassName("temperatureValue")
+				for (var i = temperatureValues.length - 1; i >= 0; i--) {
+					const temperatureItem = temperatureValues[i]
+					const temperatureValue = temperatureItem.getAttribute("value")
+					
+					temperatureItem.innerHTML = formattedTemperature(temperatureValue, document.getElementById("temperature").value)
+				}
+				
         		/*
         		halfFlour = ((flourPB * ballCount) / 2);
         		
@@ -263,15 +281,9 @@
         		
         		for (var k in params){
             		if (document.getElementById(k)) {
-                		
-                		var value = params[k];
-                		
-                		if (k == "notes") {
-                    		value = decodeURIComponent(value);
-                		}
-                    		
-                        document.getElementById(k).value = value;
-                		
+                		const value = decodeURIComponent(params[k]);
+							
+						document.getElementById(k).value = value;
             		}
                 }
                 
@@ -283,7 +295,7 @@
         		
         		var baseURL = window.location.href.split('?')[0] 
         		baseURL = baseURL + "?";
-        		var elements = ["ballCount", "ballWeight", "waterPercent", "saltPercent", "wholeWheatPercent", "oilPercent", "yeastPercent", "leavenPercent", "sugarPercent", "otherPercent"];
+        		var elements = ["ballCount", "ballWeight", "waterPercent", "saltPercent", "wholeWheatPercent", "oilPercent", "yeastPercent", "leavenPercent", "sugarPercent", "otherPercent", "temperature"];
         		
         		elements.forEach(function(k) {
             		baseURL = baseURL + k + "=" + document.getElementById(k).value + "&"
@@ -412,9 +424,19 @@
                     	<a href="javascript:stepField('otherPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
                     </td>
             	</tr>
+				
+            	<tr>
+                	<td align="right">Temperature Unit:</td>
+                	<td>
+						<select name="temperature" id="temperature" onchange="recalc(); return true;">
+							<option value="ºF">ºF</option>
+							<option value="ºC">ºC</option>
+						</select>
+					</td>
+            	</tr>
             	
             	<tr>
-                	<td align="right">Notes :</td>
+                	<td align="right">Notes:</td>
                 	<td>
                     	<input type="text" id="notes" name="notes" class="inputField" style="width: 160px;" onchange="makeBookmark(); return true;">
                     </td>
@@ -485,8 +507,8 @@
             
         <p>Stir more. Gradually stir in flour till it's all nice and blended and when you can't do that then dump more in. Then shove it all in your mixer.</p>
 
-        <p>Mix until it is consistent (probably for about 4-6 minutes). Then let it rest for 30-60 minutes. Then knead the whole thing a couple of times, and then let it rise for 24 hours in a cool place. I put mine in a little fridge I've got set to stay at 56°F. Now, 12-8 hours before you're going to eat, break your bulk raise into multiple balls, knead, and let it raise again till cooking time. If you're in a warmer climate, you might want to do this 3-4 hours before hand, since warmer temps will make things rise faster.</p>
-
+        <p>Mix until it is consistent (probably for about 4-6 minutes). Then let it rest for 30-60 minutes. Then knead the whole thing a couple of times, and then let it rise for 24 hours in a cool place. I put mine in a little fridge I've got set to stay at <span class="temperatureValue" value="56"></span>. Now, 12-8 hours before you're going to eat, break your bulk raise into multiple balls, knead, and let it raise again till cooking time. If you're in a warmer climate, you might want to do this 3-4 hours before hand, since warmer temps will make things rise faster.</p>
+		
         <p><strong>"OH CRAP, I DIDN'T READ AHEAD AND I DON'T HAVE 36 HOURS TO DO THIS."</strong></p>
 
         <p>Use more yeast and let it rest for 20 minutes, break up your dough balls, and then let it raise for however long you can. I would give it at least a couple of hours. If you're trying to do it in less than that… well, you're out of luck. Maybe you should read the whole thing first next time, eh?</p>
