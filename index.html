@@ -3,7 +3,8 @@
 <html>
 	<head>
     	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    	<meta name="viewport" content="width=500, minimum-scale=0.45" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    	<!-- <meta name="viewport" content="width=500, minimum-scale=0.45" /> -->
     	
     	<link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
     	
@@ -67,7 +68,7 @@
 			            
 			.amount {
 				display: inline-block;
-				height: 30px;
+				height: 32px;
 				vertical-align: middle;
 				
 				margin: 0px;
@@ -83,18 +84,18 @@
 				color: black;
 			
 				/* Combined Shape: */
-				color: #eeeeee;
-				background: #4A4A4A;
+				color: #eee;
+				background: #5A5A5A;
 				box-shadow: 0 2px 4px 0 rgba(0,0,0,0.23);
 				line-height: 30px;
 			}
 			
 			.amount:hover {
-				background: #4C4C4C;
+				background: #5C5C5C;
 			}
 							
 			.amount:active {
-				background: #5A5A5A;
+				background: #6A6A6A;
 			}
 
 			.increase {
@@ -148,6 +149,17 @@
             #finalTriviaRow td {
                 padding-top: 10pt;
             }
+			
+			@media screen and (max-width: 480px) {
+				td {
+					font-size: 13pt;
+				}
+
+				.amount {
+					padding-left: 15px;
+					padding-right: 15px;
+				}
+			}
             
         </style>
 		
