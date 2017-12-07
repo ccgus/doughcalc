@@ -64,6 +64,10 @@
                 padding-right: 10px;
                 float: none;
             }
+			
+			.measure {
+				font-weight: bold;
+			}
             
             .gram {
                 font-size: .6em;
@@ -115,6 +119,28 @@
                 }
                 
             }
+			
+			function instruction(quantity, unit) {
+				return quantity.toFixed(1) <= 0 ? "" : formattedMeasure(quantity, unit)
+			}
+
+			function filteredInstructions(instructions) {
+				return instructions.filter(val => val != "");
+			}
+			
+			function joinedInstructions(instructions) {
+				return instructions.join(" and ");
+			}
+			
+			function combinedInstructions(instructions, prefix = "", suffix = "", allEmptyValue = "") {
+				let filtered = filteredInstructions(instructions)
+				return filtered.length > 0 ? prefix + " " + joinedInstructions(filtered) + suffix : allEmptyValue
+			}
+			
+			function formattedMeasure(quantity, unit) {
+				let fixedQuantity = quantity.toFixed(1) 
+				return fixedQuantity <= 0 ? "" : "<span class=\"measure\">" + fixedQuantity + "</span> gr of " + unit;
+			}
             
     		function recalc() {
         		
@@ -152,17 +178,33 @@
                 document.getElementById("finalBallCount").innerHTML = ballCount + " pizza" + ((ballCount > 1) ? "s" : "");
                 
         		document.getElementById("finalYeast").innerHTML = yeastG.toFixed(1);
-
+        		document.getElementById("finalLeaven").innerHTML = leavenG.toFixed(1);
+				
+				let yeastInstruction = instruction(yeastG, "yeast")
+				let leavenInstruction = instruction(leavenG, "leaven")
+				
+				document.getElementById("yeastLeaven").innerHTML = combinedInstructions([yeastInstruction, leavenInstruction], "", "", "no yeast nor leaven, really?")
+				
         		document.getElementById("finalWhiteWheat").innerHTML = whiteG.toFixed(1);
                 document.getElementById("finalWholeWheat").innerHTML = wholeG.toFixed(1);
-        		document.getElementById("finalSalt").innerHTML = saltG.toFixed(1);
+        		
+				document.getElementById("finalSalt").innerHTML = saltG.toFixed(1);
+        		document.getElementById("saltQuantity").innerHTML = saltG.toFixed(1) + " gr";
+				
         		document.getElementById("finalWater").innerHTML = waterG.toFixed(1);
+        		document.getElementById("waterQuantity").innerHTML = waterG.toFixed(1) + " gr";
+				
         		document.getElementById("finalOil").innerHTML = oilG.toFixed(1);
-        		document.getElementById("finalLeaven").innerHTML = leavenG.toFixed(1);
+
         		document.getElementById("finalSugar").innerHTML = sugarG.toFixed(1);
         		document.getElementById("finalOther").innerHTML = otherG.toFixed(1);
 
         		document.getElementById("finalTotal").innerHTML = (flourG + saltG + waterG + oilG + yeastG + leavenG + sugarG + otherG).toFixed(0);
+				
+				let oilInstruction = instruction(oilG, "oil");								
+				let sugarInstruction = instruction(sugarG, "sugar");
+				
+				document.getElementById("oilSugar").innerHTML = combinedInstructions([oilInstruction, sugarInstruction], "Add", ".");
                 
                 var showTrivia = false;
                 var trivia     = "";
@@ -439,7 +481,7 @@
     	<div style="padding-top: 20px;">
     	Alright, <strong>here's the plan</strong>. We're making <span id="finalBallCount">X</span>.
     	
-        <p>First up, add your water and salt. Stir. Next add yeast / leaven. Stir. If you are putting sugar or olive oil in the mix, go ahead and add that too.</p>
+        <p>First up, add <span id="waterQuantity" class="measure">your</span> water and <span id="saltQuantity" class="measure"></span> salt. Stir. Next add <span id="yeastLeaven">yeast / leaven</span>. Stir. <span id="oilSugar">If you are putting sugar or olive oil in the mix, go ahead and add that too.</span></p>
             
         <p>Stir more. Gradually stir in flour till it's all nice and blended and when you can't do that then dump more in. Then shove it all in your mixer.</p>
 
