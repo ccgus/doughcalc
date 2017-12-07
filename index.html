@@ -19,7 +19,7 @@
                 font-family:       'Raleway', sans-serif;
                 text-rendering:     optimizeLegibility;
             }
-            
+			            
             .header {
                 background-color: #000;
                 color: #fff;
@@ -47,23 +47,79 @@
             }
             
             ul {
-                padding-top: 0px;
-                margin-top: -15px;
-                margin-bottom: 3px;
+				padding-top: 0px;
+				margin-top: -15px;
+				margin-bottom: 3px;
             }
+			
+			table {
+				border-spacing: 5px;
+			}
             
             .inputField {
-                width: 60px;
+				width: 60px;
+				height: 30px; 
+				font-size: 11pt;
+				padding-left: 5px;
+				border: 1px solid #ddd;
+				border-radius: 2px;
             }
-            
-            .changeButton {
-                border: 10px;
-                margin: 0px;
-                margin-bottom: -4px;
-                padding: 0px;
-                padding-right: 10px;
-                float: none;
-            }
+			            
+			.amount {
+				display: inline-block;
+				height: 30px;
+				vertical-align: middle;
+				
+				margin: 0px;
+				padding-left: 20px;
+				padding-right: 20px;
+				padding-bottom: 2px;
+				float: none;
+				text-decoration: none;
+				text-align: center;
+				vertical-align: middle;
+				font-size: 24pt;
+				font-weight: 500;
+				color: black;
+			
+				/* Combined Shape: */
+				color: #eeeeee;
+				background: #4A4A4A;
+				box-shadow: 0 2px 4px 0 rgba(0,0,0,0.23);
+				line-height: 30px;
+			}
+			
+			.amount:hover {
+				background: #4C4C4C;
+			}
+							
+			.amount:active {
+				background: #5A5A5A;
+			}
+
+			.increase {
+				border-radius: 2px 0 0 2px;
+				line-height: 34px;
+			}
+			
+			.increase::after {
+				/* Line: */
+				position: relative;
+				display: inline-block;
+				left: 22px;
+				content: " ";
+				width: 1px;
+				height: 24px;
+				opacity: 0.04;
+				border: 1px solid #000000;
+				box-shadow: -1px 0 0 0 rgba(255,255,255,0.50);
+			}
+			
+			.decrease {
+				position: relative;
+				left: -5px;
+				border-radius: 0 2px 2px 0;
+			}
 			
 			.measure {
 				font-weight: bold;
@@ -71,12 +127,6 @@
             
             .gram {
                 font-size: .6em;
-            }
-            
-            tr {
-                padding: 0px;
-                margin: 0px;
-                border: 0px;
             }
             
             .copyright {
@@ -349,8 +399,8 @@
             	<tr>
                 	<td align="right">Pie count:</td>
                 	<td valign="center"><input type="number" class="inputField" id="ballCount" name="ballCount" value="4" min="1" max="2000" pattern="\d*" onchange="recalc(); return true;" />
-                    	<a href="javascript:stepField('ballCount', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('ballCount', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('ballCount', 1, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('ballCount', 1, -1)">-</a>
                     	
                 	</td>
             	</tr>
@@ -358,70 +408,70 @@
             	<tr>
                 	<td align="right">Ball weight (grams):</td>
                 	<td><input type="number" class="inputField" id="ballWeight" name="ballWeight" value="280" min="10" max="1000" step="5" pattern="\d*" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('ballWeight', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('ballWeight', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('ballWeight', 5, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('ballWeight', 5, -1)">-</a>
                     </td>
             	</tr>
             	
             	<tr>
                 	<td align="right">Water %:</td>
                 	<td><input type="number" class="inputField" id="waterPercent" name="waterPercent" value="64" min="50" max="100" step=".5" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('waterPercent', .5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('waterPercent', .5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('waterPercent', .5, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('waterPercent', .5, -1)">-</a>
                     </td>
             	</tr>
             	
             	<tr>
                 	<td align="right">Salt %:</td>
                 	<td><input type="number" class="inputField" id="saltPercent" name="saltPercent" value="2.5" min="0" step=".25" max="10" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('saltPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('saltPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('saltPercent', .25, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('saltPercent', .25, -1)">-</a>
                     </td>
             	</tr>
             	
             	<tr>
                 	<td align="right">Yeast %:</td>
                 	<td><input type="number" class="inputField" id="yeastPercent" name="yeastPercent" value=".5" min="0" max="10" step=".1" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('yeastPercent', .1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('yeastPercent', .1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('yeastPercent', .1, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('yeastPercent', .1, -1)">-</a>
                     </td>
             	</tr>
             	
             	<tr>
                 	<td align="right">Sugar %:</td>
                 	<td><input type="number" class="inputField" id="sugarPercent" name="sugarPercent" value="0" min="0" max="10" step=".1" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('sugarPercent', .1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('sugarPercent', .1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('sugarPercent', .1, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('sugarPercent', .1, -1)">-</a>
                     </td>
             	</tr>
             	<tr>
                 	<td align="right">Leaven %:</td>
                 	<td><input type="number" class="inputField" id="leavenPercent" name="leavenPercent" value="0" min="0" max="30" step=".25" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('leavenPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('leavenPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('leavenPercent', .25, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('leavenPercent', .25, -1)">-</a>
                     </td>
             	</tr>
             	<tr>
                 	<td align="right">Whole wheat %:</td>
                 	<td><input type="number" class="inputField" id="wholeWheatPercent" name="wholeWheatPercent" value="0" min="0" max="100" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('wholeWheatPercent', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('wholeWheatPercent', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('wholeWheatPercent', 1, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('wholeWheatPercent', 1, -1)">-</a>
                     </td>
             	</tr>
             	
             	<tr>
                 	<td align="right">Olive oil %:</td>
                 	<td><input type="number" class="inputField" id="oilPercent" name="oilPercent" value="0" min="0" max="100" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('oilPercent', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('oilPercent', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('oilPercent', 1, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('oilPercent', 1, -1)">-</a>
                     </td>
             	</tr>
             	
             	<tr>
                 	<td align="right">Other %:</td>
                 	<td><input type="number" class="inputField" id="otherPercent" name="otherPercent" value="0" min="0" max="100" step=".25" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('otherPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('otherPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    	<a class="increase amount" href="javascript:stepField('otherPercent', .25, 1)">+</a>
+                    	<a class="decrease amount" href="javascript:stepField('otherPercent', .25, -1)">-</a>
                     </td>
             	</tr>
 				
