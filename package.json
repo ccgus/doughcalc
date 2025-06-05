@@ -1,0 +1,16 @@
+{
+  "name": "doughcalc",
+  "version": "1.0.0",
+  "description": "This is Gus's dough calculator.",
+  "main": "Sortable.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
