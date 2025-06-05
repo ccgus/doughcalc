@@ -1,537 +1,233 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <!--  rsync -avz -e ssh ./calc/ gus@shapeof.com:/home/gus/shapeof/pizzalab/calc -->
 <html>
-	<head>
-    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    	<meta name="viewport" content="width=500, minimum-scale=0.45" />
-    	
-    	<link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
-    	
-		<title>Maybe Pizza? Dough Calculator</title>
-		
-		<style type="text/css">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        
+        <meta name="viewport" content="width=600, minimum-scale=0.45" />
+    
+        <style type="text/css">
+            
             body {
-                margin-top:         0px;
-                margin-left:        0px;
-                margin-right:       0px;
-                background-color:   #fff;
-                font-size:          15pt;
-                font-family:       'Raleway', sans-serif;
-                text-rendering:     optimizeLegibility;
+                padding: 0px;
+                margin: 0px;
+                background-color: #ffffff;
+                font-family: system, -apple-system, ".SFNSDisplay-Regular", "HelveticaNeue",  "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+                font-size: 1.2em;
             }
             
-            .header {
-                background-color: #000;
-                color: #fff;
-                text-align: center;
-                font-size: 24pt;
-                font-weight: 900;
+            .ingredientsList {
+                margin: auto;
             }
             
-            .main {
-                max-width:    800px;
-                margin-left:  10px;
-                margin-right: 10px;
-                padding-top:  10px;
+            .ingredient {
+                
             }
             
-            .releaseNotes {
-                margin-top: 20px;
-                padding-top: 20px;
-                border-top: solid 1px #000;
-                text-align: left;
-            }
-            
-            .releaseNotes p, .releaseNotes blockquote, .releaseNotes ul {
-                font-size: .85em;
-            }
-            
-            ul {
-                padding-top: 0px;
-                margin-top: -15px;
-                margin-bottom: 3px;
-            }
-            
-            .inputField {
-                width: 60px;
+            .listItem, .ingredient {
+                background-color: #ffe7e7;
+                max-width: 400px;
+                //border: solid 1px;
+                margin: auto;
+                padding: 6px;
             }
             
             .changeButton {
                 border: 10px;
                 margin: 0px;
-                margin-bottom: -4px;
+                margin-bottom: -2px;
                 padding: 0px;
                 padding-right: 10px;
                 float: none;
+                width: 20px;
+                height: 20px;
             }
             
-            .gram {
-                font-size: .6em;
+            .inputField {
+                width: 100px;
+                font-size: .85em;
+                padding-left: 5pt;
             }
             
-            tr {
-                padding: 0px;
-                margin: 0px;
-                border: 0px;
-            }
-            
-            .copyright {
-                padding: 10px;
-                text-align: center;
-                font-size: .8em;
-            }
-            
-            .quote, blockquote {
-                color: #222;
-                background: #fbfbfb;
-                border-left: solid 1px #ddd;
-
-                padding-left: 15px;
-                margin-bottom: -1.5em;
-                margin: 0px;
-            }
-            
-            #finalTriviaRow td {
-                padding-top: 10pt;
-            }
             
         </style>
-		
-		
-		<script type="application/ecmascript" language="javascript">
-    		Math.clamp = function(number, min, max) {
-                return Math.max(min, Math.min(number, max));
+        <title></title>
+    </head>
+    <body>
+        
+        
+        
+        
+        <form id="calcForm">
+            
+            
+            <div>
+                <div class="">
+                    <div class="listItem">
+                        Presets:
+                            <select id="presets" name="presets" onchange="loadPreset(this);" style="height: 2.5em;">
+                                <option>Choose a Preset</option>
+                            </select>
+                        
+                    </div>
+                    
+                </div>
+                
+                
+                <div class="listItem">
+                        No. doughs / pizzas:
+                        <div style="float: right">
+                        <input type="number" class="inputField" id="ballCount" name="ballCount" value="4" min="1" max="2000" pattern="\d*" onchange="recalc(); return true;" />
+                            <a href="javascript:stepField('ballCount', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
+                            <a href="javascript:stepField('ballCount', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                        </div>
+                </div>
+                
+                <div class="listItem">
+                    Each weight (grams):
+                    <div style="float: right">
+                        <input type="number" class="inputField" id="ballWeight" name="ballWeight" value="280" min="10" max="1000" step="5" pattern="\d*" onchange="recalc(); return true;">
+                            <a href="javascript:stepField('ballWeight', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
+                            <a href="javascript:stepField('ballWeight', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="items" id="items">
+                <div class="ingredient">
+                    
+                        Water %:
+                        <div style="float: right">
+                        <input type="number" class="inputField" id="waterPercent" name="waterPercent" value="64" min="50" max="100" step=".5" onchange="recalc(); return true;">
+                            <a href="javascript:stepField('waterPercent', .5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
+                            <a href="javascript:stepField('waterPercent', .5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                        </div>
+                </div>
+                
+                <div class="ingredient">
+                    Salt %:
+                    <div style="float: right">
+                        <input type="number" class="inputField" id="saltPercent" name="saltPercent" value="2.5" min="0" step=".25" max="10" onchange="recalc(); return true;">
+                            <a href="javascript:stepField('saltPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
+                            <a href="javascript:stepField('saltPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    </div>
+                </div>
+                
+                <div class="ingredient">
+                    Yeast %:
+                    <div style="float: right">
+                        <input type="number" class="inputField" id="yeastPercent" name="yeastPercent" value=".5" min="0" max="10" step=".1" onchange="recalc(); return true;">
+                            <a href="javascript:stepField('yeastPercent', .1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
+                            <a href="javascript:stepField('yeastPercent', .1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                    </div>
+                </div>
+                    
+            </div>
+            
+            
+                <tr>
+                    <td align="right" >Add Ingredient:</td>
+                    <td colspan="2" valign="top">
+                        <select id="presets" name="presets" onchange="loadIngredient(this);" style="height: 2.5em;">
+                            <option>Choose an Ingredient</option>
+                        </select>
+                    </td>
+                </tr>
+                
+                
+        </form>
+        
+        
+        <a href="#" onclick="addIngredient(event)">Click me</a>
+        
+        
+        <script src="./Sortable.js"></script>
+        
+        
+        <script type="application/ecmascript" language="javascript">
+            
+            // Default SortableJS
+            //import Sortable from 'sortablejs';
+            
+            var el = document.getElementById('items');
+            var sortable = Sortable.create(el);
+            
+            var x = 0;
+            
+            function addIngredient() {
+                
+                x++;
+                const itemsDiv = document.getElementById("items");
+                const newDiv = document.createElement("div");
+                newDiv.className = "ingredient";
+                
+                var name = "flour"
+                var fieldName = "flour"
+                
+                newDiv.innerHTML = `
+                ${name}:
+                <div style="float: right">
+                <input type="number" class="inputField" id="${fieldName}" name="${fieldName}" value="2.5" min="0" step=".25" max="10" onchange="recalc(); return true;">
+
+                <a href="javascript:stepField('${name}', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
+                <a href="javascript:stepField('{name}', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                </div>`
+                
+                
+                itemsDiv.appendChild(newDiv);
+                
             }
             
-            function tableVis(name, show) {
-                
-                var element = document.getElementById(name);
-                if (element) {
-                    var rowStyle = element.style;
-                    rowStyle.display = show ? 'table-row' : 'none';
-                }
-                else {
-                    window.console.log("No row named '" + name + "'");
-                }
+            function addDefaultIngredients() {
                 
             }
             
-    		function recalc() {
-        		
-        		var ballCount         = parseInt(document.getElementById("ballCount").value);
-        		var ballWeight        = parseInt(document.getElementById("ballWeight").value);
-        		
-        		var waterPercent      = parseFloat(document.getElementById("waterPercent").value) / 100.0;
-        		var saltPercent       = parseFloat(document.getElementById("saltPercent").value) / 100.0;
-        		var wholeWheatPercent = parseFloat(document.getElementById("wholeWheatPercent").value) / 100.0;
-        		var whiteWheatPercent = 1.0 - (wholeWheatPercent);
-        		var oilPercent        = parseFloat(document.getElementById("oilPercent").value) / 100.0;
-        		var yeastPercent      = parseFloat(document.getElementById("yeastPercent").value) / 100.0;
-        		var leavenPercent     = parseFloat(document.getElementById("leavenPercent").value) / 100.0;
-        		var sugarPercent      = parseFloat(document.getElementById("sugarPercent").value) / 100.0;
-        		var otherPercent      = parseFloat(document.getElementById("otherPercent").value) / 100.0;
-        		
-        		
-        		var nonFlourPerc = waterPercent + saltPercent + oilPercent + yeastPercent + leavenPercent + sugarPercent + otherPercent;
-        		
-        		var flourPercentageOfTotal = 1.0 / (1 + nonFlourPerc);
-                
-                var flourG = ballWeight * ballCount * flourPercentageOfTotal;
-                
-                var whiteG = flourG * whiteWheatPercent;
-                var wholeG = flourG * wholeWheatPercent;
-                
-                var saltG  = flourG * saltPercent;
-                var waterG = flourG * waterPercent;
-                var oilG   = flourG * oilPercent;
-                var yeastG = flourG * yeastPercent;
-                var leavenG = flourG * leavenPercent;
-                var sugarG = flourG * sugarPercent;
-                var otherG = flourG * otherPercent;
-                
-                document.getElementById("finalBallCount").innerHTML = ballCount + " pizza" + ((ballCount > 1) ? "s" : "");
-                
-        		document.getElementById("finalYeast").innerHTML = yeastG.toFixed(1);
-
-        		document.getElementById("finalWhiteWheat").innerHTML = whiteG.toFixed(1);
-                document.getElementById("finalWholeWheat").innerHTML = wholeG.toFixed(1);
-        		document.getElementById("finalSalt").innerHTML = saltG.toFixed(1);
-        		document.getElementById("finalWater").innerHTML = waterG.toFixed(1);
-        		document.getElementById("finalOil").innerHTML = oilG.toFixed(1);
-        		document.getElementById("finalLeaven").innerHTML = leavenG.toFixed(1);
-        		document.getElementById("finalSugar").innerHTML = sugarG.toFixed(1);
-        		document.getElementById("finalOther").innerHTML = otherG.toFixed(1);
-
-        		document.getElementById("finalTotal").innerHTML = (flourG + saltG + waterG + oilG + yeastG + leavenG + sugarG + otherG).toFixed(0);
-                
-                var showTrivia = false;
-                var trivia     = "";
-                if (leavenG > 0) {
-                    showTrivia = true;
-                    
-                    var liquidTotals = waterG + (leavenG * .5);
-                    var flourTotals  = flourG + (leavenG * .5);
-                    
-                    var f = (liquidTotals / flourTotals)  * 100;
-                    
-                    document.getElementById("finalTrivia").innerHTML = "Hydration with leaven is " + f.toFixed(1) + "%<br/>(assuming 50/50 flour &amp; water split for feedings)"
-                    
-                }
-                
-                
-                tableVis("finalLeavenRow",     leavenG > 0);
-                tableVis("finalOliveOilRow",   oilG > 0);
-                tableVis("finalSugarRow",      sugarG > 0);
-                tableVis("finalWhiteWheatRow", whiteG > 0);
-                tableVis("finalWholeWheatRow", wholeG > 0);
-                tableVis("finalYeastRow",      yeastG > 0);
-                tableVis("finalSaltRow",       saltG > 0);
-                tableVis("finalOtherRow",      otherG > 0);
-                tableVis("finalTriviaRow",     showTrivia);
-                
-        		/*
-        		halfFlour = ((flourPB * ballCount) / 2);
-        		
-        		document.getElementById("halfFlour").innerHTML = halfFlour.toFixed(1);
-        		document.getElementById("firstPoolish").innerHTML = (halfFlour + (waterPB * ballCount) + (saltPB * ballCount)).toFixed(1);
-        		*/
-        		makeBookmark();
-    		}
-    		
-    		function setNotesDefault() {
-                var today = new Date();
-                document.getElementById("notes").value = (today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate())
-    		}
-    		
-    		function searchForDefaults() {
-        		
-        		var params = {};
-                
-                setNotesDefault();
-
-                if (location.search) {
-                    var parts = location.search.substring(1).split('&');
-                    
-                    for (var i = 0; i < parts.length; i++) {
-                        var nv = parts[i].split('=');
-                        if (!nv[0]) continue;
-                        params[nv[0]] = nv[1] || "";
+            async function loadJsonFromFile(filePath) {
+                try {
+                    const response = await fetch(filePath);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('Error loading JSON:', error);
+                    throw error;
                 }
-        		
-        		for (var k in params){
-            		if (document.getElementById(k)) {
-                		
-                		var value = params[k];
-                		
-                		if (k == "notes") {
-                    		value = decodeURIComponent(value);
-                		}
-                    		
-                        document.getElementById(k).value = value;
-                		
-            		}
-                }
-                
-                recalc();
-        		
-    		}
-    		
-    		function makeBookmark() {
-        		
-        		var baseURL = window.location.href.split('?')[0] 
-        		baseURL = baseURL + "?";
-        		var elements = ["ballCount", "ballWeight", "waterPercent", "saltPercent", "wholeWheatPercent", "oilPercent", "yeastPercent", "leavenPercent", "sugarPercent", "otherPercent"];
-        		
-        		elements.forEach(function(k) {
-            		baseURL = baseURL + k + "=" + document.getElementById(k).value + "&"
-        		});
-        		
-        		
-        		baseURL = baseURL + "notes=" + encodeURIComponent(document.getElementById("notes").value);
-        		
-        		document.getElementById("bookmark").href = baseURL;
-    		}
-    		
-    		function stepField(name, stepSize, direction) {
-        		
-        		var field = document.getElementById(name);
-        		if (field) {
-            		var current = parseFloat(field.value);
-            		
-            		var newValue = current + (stepSize * direction);
-            		
-            		newValue = Math.clamp(newValue, field.min, field.max);
-            		
-            		var fixedSize = 1;
-            		
-            		if (stepSize < .3 && stepSize > .2) { // aka, .25. There's a better way to do this, I'm just too lazy to look it up right now.
-                		fixedSize = 2;
-            		}
-            		
-            		field.value = parseFloat(newValue.toFixed(fixedSize));
-            		
-            		recalc();
-        		}
-        		
-    		}
-    		
-    		
-		</script>
-	</head>
-	<body onload="searchForDefaults();">
-    	
-    	<div class="header">The <a href="http://maybepizza.com/" style="color: #eee;">Maybe Pizza?</a> Dough Calculator</div>
-    	
-    	
-    	<center>
-    	
-    	
-    	<div class="main">
-    	
-    	<form id="calcForm">
-        	
-        	<table>
-            	<tr>
-                	<td align="right">Pie count:</td>
-                	<td valign="center"><input type="number" class="inputField" id="ballCount" name="ballCount" value="4" min="1" max="2000" pattern="\d*" onchange="recalc(); return true;" />
-                    	<a href="javascript:stepField('ballCount', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('ballCount', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    	
-                	</td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Ball weight (grams):</td>
-                	<td><input type="number" class="inputField" id="ballWeight" name="ballWeight" value="280" min="10" max="1000" step="5" pattern="\d*" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('ballWeight', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('ballWeight', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Water %:</td>
-                	<td><input type="number" class="inputField" id="waterPercent" name="waterPercent" value="64" min="50" max="100" step=".5" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('waterPercent', .5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('waterPercent', .5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Salt %:</td>
-                	<td><input type="number" class="inputField" id="saltPercent" name="saltPercent" value="2.5" min="0" step=".25" max="10" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('saltPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('saltPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Yeast %:</td>
-                	<td><input type="number" class="inputField" id="yeastPercent" name="yeastPercent" value=".5" min="0" max="10" step=".1" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('yeastPercent', .1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('yeastPercent', .1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Sugar %:</td>
-                	<td><input type="number" class="inputField" id="sugarPercent" name="sugarPercent" value="0" min="0" max="10" step=".1" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('sugarPercent', .1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('sugarPercent', .1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	<tr>
-                	<td align="right">Leaven %:</td>
-                	<td><input type="number" class="inputField" id="leavenPercent" name="leavenPercent" value="0" min="0" max="30" step=".25" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('leavenPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('leavenPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	<tr>
-                	<td align="right">Whole wheat %:</td>
-                	<td><input type="number" class="inputField" id="wholeWheatPercent" name="wholeWheatPercent" value="0" min="0" max="100" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('wholeWheatPercent', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('wholeWheatPercent', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Olive oil %:</td>
-                	<td><input type="number" class="inputField" id="oilPercent" name="oilPercent" value="0" min="0" max="100" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('oilPercent', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('oilPercent', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Other %:</td>
-                	<td><input type="number" class="inputField" id="otherPercent" name="otherPercent" value="0" min="0" max="100" step=".25" onchange="recalc(); return true;">
-                    	<a href="javascript:stepField('otherPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                    	<a href="javascript:stepField('otherPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                    </td>
-            	</tr>
-            	
-            	<tr>
-                	<td align="right">Notes :</td>
-                	<td>
-                    	<input type="text" id="notes" name="notes" class="inputField" style="width: 160px;" onchange="makeBookmark(); return true;">
-                    </td>
-            	</tr>
-            	
-        	</table>
-        	
-    	</form>
-    	
-    	<span style="font-size: .7em;"><a href="" id="bookmark">URL to these settings</a> | <a href="javascript:document.getElementById('calcForm').reset(); recalc();">Reset</a></span>
-    	
-    	<div style="text-align: left; padding-top: 10px;">
-    	
-    	<p><strong>This is the part you pay attention to when mixing ingredients.</strong><br/></p>
-
-    	<table class="finalTable">
-    	<tr>
-        	<td align="right">Water:</td>
-        	<td><span id="finalWater"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalSaltRow">
-        	<td align="right">Salt:</td>
-        	<td><span id="finalSalt"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalLeavenRow">
-        	<td align="right">Leaven:</td>
-        	<td><span id="finalLeaven"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalSugarRow">
-        	<td align="right">Sugar:</td>
-        	<td><span id="finalSugar"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalYeastRow">
-        	<td align="right">Yeast:</td>
-        	<td><span id="finalYeast"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalOliveOilRow">
-        	<td align="right">Olive oil:</td>
-        	<td><span id="finalOil"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalOtherRow">
-        	<td align="right">Other:</td>
-        	<td><span id="finalOther"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalWholeWheatRow">
-        	<td align="right">Whole wheat:</td>
-        	<td><span id="finalWholeWheat"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalWhiteWheatRow">
-        	<td align="right">White flour:</td>
-        	<td><span id="finalWhiteWheat"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr>
-        	<td align="right">Total:</td>
-        	<td><span id="finalTotal"></span><span class="gram">g</span></td>
-    	</tr>
-    	<tr id="finalTriviaRow">
-        	<td align="right" valign="top">Trivia:</td>
-        	<td><span id="finalTrivia"></span></td>
-    	</tr>
-    	</table>
-    	
-    	
-    	<div style="padding-top: 20px;">
-    	Alright, <strong>here's the plan</strong>. We're making <span id="finalBallCount">X</span>.
-    	
-        <p>First up, add your water and salt. Stir. Next add yeast / leaven. Stir. If you are putting sugar or olive oil in the mix, go ahead and add that too.</p>
+            }
             
-        <p>Stir more. Gradually stir in flour till it's all nice and blended and when you can't do that then dump more in. Then shove it all in your mixer.</p>
-
-        <p>Mix until it is consistent (probably for about 4-6 minutes). Then let it rest for 30-60 minutes. Then knead the whole thing a couple of times, and then let it rise for 24 hours in a cool place. I put mine in a little fridge I've got set to stay at 56°F. Now, 12-8 hours before you're going to eat, break your bulk raise into multiple balls, knead, and let it raise again till cooking time. If you're in a warmer climate, you might want to do this 3-4 hours before hand, since warmer temps will make things rise faster.</p>
-
-        <p><strong>"OH CRAP, I DIDN'T READ AHEAD AND I DON'T HAVE 36 HOURS TO DO THIS."</strong></p>
-
-        <p>Use more yeast and let it rest for 20 minutes, break up your dough balls, and then let it raise for however long you can. I would give it at least a couple of hours. If you're trying to do it in less than that… well, you're out of luck. Maybe you should read the whole thing first next time, eh?</p>
-
-<!--
-<strong>Poolish stuff.</strong><br/>
-If you don't know what that is, ignore it.<br/>
-
-Half flour + water + salt:<span id="firstPoolish"></span><br/>
-Half flour: <span id="halfFlour"></span><br/>
--->
-
-Questions or comments? Email <a href="mailto:gus@flyingmeat.com">gus@flyingmeat.com</a>
-    	</div>
-    	
-    	
-    	
-    	
-    	
-    	<div class="releaseNotes">
-    	
-    	<strong>FAQ</strong>
-    	
-    	<p>
-    	<strong>What's with all the % numbers?</strong><br/>
-    	It's called Baker's Percentage. Here is what <a href="https://www.kingarthurflour.com/professional/bakers-percentage.html">King Arthur has to say about it</a>:
-    	
-    	<blockquote>When writing a formula, the easiest method is to do so using what is known as baker’s percentage, or baker’s math. In using baker’s percentage, each ingredient in a formula is expressed as a percentage of the flour weight, and the flour weight is always expressed as 100%.</blockquote>
-    	
-    	</p>
-    	
-    	
-    	</div> <!-- end releaseNotes -->
-    	
-    	
-    	
-    	
-    	</div>
-    	
-    	
-    	<div class="releaseNotes">
-    	
-    	<strong>Release Notes</strong>
-    	
-    	<p>January 19, 2017
-        	<ul>
-            	<li>Added a trivia section about your dough below the total, but for now it only show when you add leaven to your recipe.</li>
-
-        	</ul>
-    	</p>
-    	
-    	<p>June 20, 2016
-        	<ul>
-            	<li>Oil is no longer subtracted from the water total.</li>
-            	<li>Added sugar, leaven (aka, starter), and "other" options.</li>
-            	<li>Reworked the formula for bakers percentages, simplifying things for myself.</li>
-            	<li>Took away the poolish information. I'll expand on that again at some later date.</li>
-            	<li>The calculator will now hide the ingredients that have a weight of zero.</li>
-            	<li>Added a mini-faq, with a link to baker's percentage info.</li>
-                <li>Renamed the olive oil bookmark variable, so you'll need to make a new bookmark if you saved that.</li>
-
-        	</ul>
-    	</p>
-    	
-    	<p>June 10, 2016
-        	<ul>
-        	    <li>Hello world.</li>
-        	</ul>
-    	</p>
-    	
-    	</div> <!-- end releaseNotes -->
-    	
-    	</div>  
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	<div class="copyright">Copyright 2016, August Mueller</div>
-    	
-    	
-        </div> <!-- main -->
-    	
-    	</center>
-	</body>
+            
+            function loadPresetIngredients() {
+                loadJsonFromFile('ingredients.json').then(data => {
+                    console.log('Data loaded from file:', data);
+                    console.log("Ingredients: ", data['ingredients']);
+                    
+                    var ingredientsDict = data['ingredients'];
+                    
+                    data['ingredients'].forEach(item => {
+                      
+                        var name = item['name']
+                        console.log(name)
+                        
+                        if (item.hasOwnProperty('entries')) {
+                            console.log("Entries!" + item['entries'])
+                        }
+                      
+                      
+                    });
+                    
+                    
+                    
+                })
+                .catch(error => {
+                    console.error('Failed to load data:', error);
+                });
+            }
+            
+            loadPresetIngredients();
+            
+        </script>
+    </body>
 </html>
 
 

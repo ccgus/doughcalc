@@ -1,0 +1,35 @@
+
+
+{
+    "key": "value",
+    "numbers": [1, 2, 3],
+    "ingredients": [
+        
+        {
+            "name": "flour",
+            "hydration": 0
+        },
+        
+        {
+            "name": "water",
+            "hydration": 1
+        },
+        
+        {
+            "name": "starters",
+            "entries": [
+            
+                {
+                   "name": "starter 50/50",
+                    "hydration": 0.5
+                },
+            
+            
+                {
+                    "name": "starter 75f/25w",
+                    "hydration": 0.25
+                }
+            ]
+        }
+    ]
+}
