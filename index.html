@@ -153,7 +153,25 @@
             var sortable = Sortable.create(el);
             
             var x = 0;
-            
+
+            function stepField(fieldId, step, direction) {
+                const el = document.getElementById(fieldId);
+                if (!el) {
+                    console.error('stepField: cannot find field', fieldId);
+                    return;
+                }
+                const current = parseFloat(el.value) || 0;
+                const newVal = current + step * direction;
+                el.value = newVal;
+                if (typeof el.onchange === 'function') {
+                    el.onchange();
+                }
+            }
+
+            function recalc() {
+                console.log('recalc placeholder');
+            }
+
             function addIngredient() {
                 
                 x++;
@@ -170,7 +188,7 @@
                 <input type="number" class="inputField" id="${fieldName}" name="${fieldName}" value="2.5" min="0" step=".25" max="10" onchange="recalc(); return true;">
 
                 <a href="javascript:stepField('${name}', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                <a href="javascript:stepField('{name}', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                <a href="javascript:stepField('${name}', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
                 </div>`
                 
                 
