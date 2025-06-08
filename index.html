@@ -250,8 +250,6 @@
             </tr>
         </form>
 
-        <a href="#" onclick="addIngredient(event)">Click me</a>
-
         <script src="./Sortable.js"></script>
 
         <script type="application/ecmascript" language="javascript">
@@ -281,24 +279,46 @@
             function recalc() {
                 console.log('recalc placeholder');
             }
+            
+            function getType(value) {
+              return Object.prototype.toString.call(value);
+            }
 
-            function addIngredient() {
-
+            function addIngredient(selectElement) {
+                
+                const selectedOption = selectElement.options[selectElement.selectedIndex];
+                const selectedItemName = selectedOption.text;
+                const selectedValue = JSON.parse(selectedOption.value);
+                
+                console.log(`keys for ${selectedItemName}: ${Object.keys(selectedValue)}`)
+                
+                var stepSize = 1.0;
+                if (selectedValue.hasOwnProperty("step")) {
+                    stepSize = selectedValue['step'];
+                    console.log(`Found custom step: ${stepSize}`)
+                }
+                else {
+                    console.log(`No custom step`);
+                }
+                
+                console.log(`type: ${getType(selectedValue)}`);
+                console.log("selectedValue:" + selectedValue);
+                
                 x++;
                 const itemsDiv = document.getElementById("items");
                 const newDiv = document.createElement("div");
                 newDiv.className = "ingredient";
-
-                var name = "flour"
-                var fieldName = "flour"
+                
+                var name = selectedItemName;
+                var fieldName = selectedItemName;
 
                 newDiv.innerHTML = `
                 ${name}:
                 <div style="float: right">
                 <input type="number" class="inputField" id="${fieldName}" name="${fieldName}" value="2.5" min="0" step=".25" max="10" onchange="recalc(); return true;">
 
-                <a href="javascript:stepField('${name}', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                <a href="javascript:stepField('${name}', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                <a href="javascript:stepField('${name}', ${stepSize}, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
+                <a href="javascript:stepField('${name}', ${stepSize}, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
                 </div>`
 
 
@@ -347,8 +367,15 @@
                                 parentEl.appendChild(group);
                             } else {
                                 const opt = document.createElement('option');
-                                opt.value = item['name'];
+                                opt.value = JSON.stringify(item);
+                                
+                                if (item.hasOwnProperty("step")) {
+                                    //opt.value = item['step']
+                                    //console.log("Found a stepo yio")
+                                }
+                                
                                 opt.textContent = item['name'];
+                                //opt.value = {'step' : 0.24};
                                 parentEl.appendChild(opt);
                             }
                         });

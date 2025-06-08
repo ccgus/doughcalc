@@ -5,29 +5,51 @@
     "numbers": [1, 2, 3],
     "ingredients": [
         
+        { "name": "Flour" },
         {
-            "name": "flour",
-            "hydration": 0
+            "name": "Salt",
+            "step": 0.25
         },
         
         {
-            "name": "water",
+            "name": "Water",
             "hydration": 1
         },
         
+        
         {
-            "name": "starters",
+            "name": "Flours",
+            "entries": [
+                { "name": "Whole wheat" },
+                { "name": "Semolina"},
+                { "name": "Flour #2"},
+                { "name": "Flour #3"},
+                { "name": "Flour #4"},
+                { "name": "Odd Flours",
+                  "entries": [
+                      { "name": "Gluten free" },
+                      { "name": "Rice flour"},
+                      { "name": "Garbanzo bean flour"}
+                  ]
+                }
+            ]
+        },
+        
+        {
+            "name": "Starters",
             "entries": [
             
                 {
                    "name": "starter 50/50",
-                    "hydration": 0.5
+                    "hydration": 0.5,
+                    "step": 0.25
                 },
             
             
                 {
-                    "name": "starter 75f/25w",
-                    "hydration": 0.25
+                    "name": "stiff starter 75f/25w",
+                    "hydration": 0.25,
+                    "step": 0.25
                 }
             ]
         }
