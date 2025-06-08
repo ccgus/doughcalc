@@ -1,37 +1,45 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <!--  Deployment: use rsync or your preferred method to copy ./calc/ to your server -->
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        
+
         <meta name="viewport" content="width=600, minimum-scale=0.45" />
-    
+
         <style type="text/css">
-            
             body {
                 padding: 0px;
                 margin: 0px;
                 background-color: #ffffff;
-                font-family: system, -apple-system, ".SFNSDisplay-Regular", "HelveticaNeue",  "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+                font-family:
+                    system,
+                    -apple-system,
+                    ".SFNSDisplay-Regular",
+                    "HelveticaNeue",
+                    "Helvetica Neue",
+                    Helvetica,
+                    Arial,
+                    "Lucida Grande",
+                    sans-serif;
                 font-size: 1.2em;
             }
-            
+
             .ingredientsList {
                 margin: auto;
             }
-            
+
             .ingredient {
-                
             }
-            
-            .listItem, .ingredient {
+
+            .listItem,
+            .ingredient {
                 background-color: #ffe7e7;
                 max-width: 400px;
                 //border: solid 1px;
                 margin: auto;
                 padding: 6px;
             }
-            
+
             .changeButton {
                 border: 10px;
                 margin: 0px;
@@ -42,116 +50,218 @@
                 width: 20px;
                 height: 20px;
             }
-            
+
             .inputField {
                 width: 100px;
-                font-size: .85em;
+                font-size: 0.85em;
                 padding-left: 5pt;
             }
-            
-            
         </style>
         <title></title>
     </head>
     <body>
-        
-        
-        
-        
         <form id="calcForm">
-            
-            
             <div>
                 <div class="">
                     <div class="listItem">
                         Presets:
-                            <select id="recipePresets" name="presets" onchange="loadPreset(this);" style="height: 2.5em;">
-                                <option>Choose a Preset</option>
-                            </select>
-                        
+                        <select
+                            id="recipePresets"
+                            name="presets"
+                            onchange="loadPreset(this);"
+                            style="height: 2.5em"
+                        >
+                            <option>Choose a Preset</option>
+                        </select>
                     </div>
-                    
                 </div>
-                
-                
+
                 <div class="listItem">
-                        No. doughs / pizzas:
-                        <div style="float: right">
-                        <input type="number" class="inputField" id="ballCount" name="ballCount" value="4" min="1" max="2000" pattern="\d*" onchange="recalc(); return true;" />
-                            <a href="javascript:stepField('ballCount', 1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                            <a href="javascript:stepField('ballCount', 1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                        </div>
+                    No. doughs / pizzas:
+                    <div style="float: right">
+                        <input
+                            type="number"
+                            class="inputField"
+                            id="ballCount"
+                            name="ballCount"
+                            value="4"
+                            min="1"
+                            max="2000"
+                            pattern="\d*"
+                            onchange="recalc(); return true;"
+                        />
+                        <a href="javascript:stepField('ballCount', 1, 1)"
+                            ><img
+                                src="plus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
+                        <a href="javascript:stepField('ballCount', 1, -1)"
+                            ><img
+                                src="minus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
+                    </div>
                 </div>
-                
+
                 <div class="listItem">
                     Each weight (grams):
                     <div style="float: right">
-                        <input type="number" class="inputField" id="ballWeight" name="ballWeight" value="280" min="10" max="1000" step="5" pattern="\d*" onchange="recalc(); return true;">
-                            <a href="javascript:stepField('ballWeight', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                            <a href="javascript:stepField('ballWeight', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                        <input
+                            type="number"
+                            class="inputField"
+                            id="ballWeight"
+                            name="ballWeight"
+                            value="280"
+                            min="10"
+                            max="1000"
+                            step="5"
+                            pattern="\d*"
+                            onchange="recalc(); return true;"
+                        />
+                        <a href="javascript:stepField('ballWeight', 5, 1)"
+                            ><img
+                                src="plus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
+                        <a href="javascript:stepField('ballWeight', 5, -1)"
+                            ><img
+                                src="minus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
                     </div>
                 </div>
             </div>
-            
+
             <div class="items" id="items">
                 <div class="ingredient">
-                    
-                        Water %:
-                        <div style="float: right">
-                        <input type="number" class="inputField" id="waterPercent" name="waterPercent" value="64" min="50" max="100" step=".5" onchange="recalc(); return true;">
-                            <a href="javascript:stepField('waterPercent', .5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                            <a href="javascript:stepField('waterPercent', .5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
-                        </div>
+                    Water %:
+                    <div style="float: right">
+                        <input
+                            type="number"
+                            class="inputField"
+                            id="waterPercent"
+                            name="waterPercent"
+                            value="64"
+                            min="50"
+                            max="100"
+                            step=".5"
+                            onchange="recalc(); return true;"
+                        />
+                        <a href="javascript:stepField('waterPercent', .5, 1)"
+                            ><img
+                                src="plus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
+                        <a href="javascript:stepField('waterPercent', .5, -1)"
+                            ><img
+                                src="minus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
+                    </div>
                 </div>
-                
+
                 <div class="ingredient">
                     Salt %:
                     <div style="float: right">
-                        <input type="number" class="inputField" id="saltPercent" name="saltPercent" value="2.5" min="0" step=".25" max="10" onchange="recalc(); return true;">
-                            <a href="javascript:stepField('saltPercent', .25, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                            <a href="javascript:stepField('saltPercent', .25, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                        <input
+                            type="number"
+                            class="inputField"
+                            id="saltPercent"
+                            name="saltPercent"
+                            value="2.5"
+                            min="0"
+                            step=".25"
+                            max="10"
+                            onchange="recalc(); return true;"
+                        />
+                        <a href="javascript:stepField('saltPercent', .25, 1)"
+                            ><img
+                                src="plus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
+                        <a href="javascript:stepField('saltPercent', .25, -1)"
+                            ><img
+                                src="minus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
                     </div>
                 </div>
-                
+
                 <div class="ingredient">
                     Yeast %:
                     <div style="float: right">
-                        <input type="number" class="inputField" id="yeastPercent" name="yeastPercent" value=".5" min="0" max="10" step=".1" onchange="recalc(); return true;">
-                            <a href="javascript:stepField('yeastPercent', .1, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
-                            <a href="javascript:stepField('yeastPercent', .1, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
+                        <input
+                            type="number"
+                            class="inputField"
+                            id="yeastPercent"
+                            name="yeastPercent"
+                            value=".5"
+                            min="0"
+                            max="10"
+                            step=".1"
+                            onchange="recalc(); return true;"
+                        />
+                        <a href="javascript:stepField('yeastPercent', .1, 1)"
+                            ><img
+                                src="plus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
+                        <a href="javascript:stepField('yeastPercent', .1, -1)"
+                            ><img
+                                src="minus.png"
+                                width="17"
+                                height="17"
+                                class="changeButton"
+                        /></a>
                     </div>
                 </div>
-                    
             </div>
-            
-            
-                <tr>
-                    <td align="right" >Add Ingredient:</td>
-                    <td colspan="2" valign="top">
-                        <select id="ingredientPresets" name="ingredientPresets" onchange="loadIngredient(this);" style="height: 2.5em;">
-                            <option>Choose an Ingredient</option>
-                        </select>
-                    </td>
-                </tr>
-                
-                
+
+            <tr>
+                <td align="right">Add Ingredient:</td>
+                <td colspan="2" valign="top">
+                    <select
+                        id="ingredientPopup"
+                        name="ingredientPopup"
+                        onchange="addIngredient(this);"
+                        style="height: 2.5em"
+                    >
+                        <option>Choose an Ingredient</option>
+                    </select>
+                </td>
+            </tr>
         </form>
-        
-        
+
         <a href="#" onclick="addIngredient(event)">Click me</a>
-        
-        
+
         <script src="./Sortable.js"></script>
-        
-        
+
         <script type="application/ecmascript" language="javascript">
-            
+
             // Default SortableJS
             //import Sortable from 'sortablejs';
-            
+
             var el = document.getElementById('items');
             var sortable = Sortable.create(el);
-            
+
             var x = 0;
 
             function stepField(fieldId, step, direction) {
@@ -173,15 +283,15 @@
             }
 
             function addIngredient() {
-                
+
                 x++;
                 const itemsDiv = document.getElementById("items");
                 const newDiv = document.createElement("div");
                 newDiv.className = "ingredient";
-                
+
                 var name = "flour"
                 var fieldName = "flour"
-                
+
                 newDiv.innerHTML = `
                 ${name}:
                 <div style="float: right">
@@ -190,16 +300,16 @@
                 <a href="javascript:stepField('${name}', 5, 1)"><img src="plus.png" width="17" height="17" class="changeButton"/></a>
                 <a href="javascript:stepField('${name}', 5, -1)"><img src="minus.png" width="17" height="17" class="changeButton"/></a>
                 </div>`
-                
-                
+
+
                 itemsDiv.appendChild(newDiv);
-                
+
             }
-            
+
             function addDefaultIngredients() {
-                
+
             }
-            
+
             async function loadJsonFromFile(filePath) {
                 try {
                     const response = await fetch(filePath);
@@ -213,13 +323,13 @@
                     throw error;
                 }
             }
-            
-            
+
+
             function loadPresetIngredients() {
                 loadJsonFromFile('ingredients.json').then(data => {
-                    const select = document.getElementById('ingredientPresets');
+                    const select = document.getElementById('ingredientPopup');
                     if (!select) {
-                        console.error('ingredientPresets select not found');
+                        console.error('ingredientPopup select not found');
                         return;
                     }
 
@@ -243,11 +353,8 @@
                     console.error('Failed to load data:', error);
                 });
             }
-            
+
             loadPresetIngredients();
-            
         </script>
     </body>
 </html>
-
-
