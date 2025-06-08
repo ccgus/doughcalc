@@ -65,7 +65,7 @@
                 <div class="">
                     <div class="listItem">
                         Presets:
-                            <select id="presets" name="presets" onchange="loadPreset(this);" style="height: 2.5em;">
+                            <select id="recipePresets" name="presets" onchange="loadPreset(this);" style="height: 2.5em;">
                                 <option>Choose a Preset</option>
                             </select>
                         
@@ -128,7 +128,7 @@
                 <tr>
                     <td align="right" >Add Ingredient:</td>
                     <td colspan="2" valign="top">
-                        <select id="presets" name="presets" onchange="loadIngredient(this);" style="height: 2.5em;">
+                        <select id="ingredientPresets" name="ingredientPresets" onchange="loadIngredient(this);" style="height: 2.5em;">
                             <option>Choose an Ingredient</option>
                         </select>
                     </td>
@@ -217,25 +217,27 @@
             
             function loadPresetIngredients() {
                 loadJsonFromFile('ingredients.json').then(data => {
-                    console.log('Data loaded from file:', data);
-                    console.log("Ingredients: ", data['ingredients']);
-                    
-                    var ingredientsDict = data['ingredients'];
-                    
+                    const select = document.getElementById('ingredientPresets');
+                    if (!select) {
+                        console.error('ingredientPresets select not found');
+                        return;
+                    }
+
                     data['ingredients'].forEach(item => {
-                      
-                        var name = item['name']
-                        console.log(name)
-                        
                         if (item.hasOwnProperty('entries')) {
-                            console.log("Entries!" + item['entries'])
+                            item['entries'].forEach(entry => {
+                                const opt = document.createElement('option');
+                                opt.value = entry['name'];
+                                opt.textContent = entry['name'];
+                                select.appendChild(opt);
+                            });
+                        } else {
+                            const opt = document.createElement('option');
+                            opt.value = item['name'];
+                            opt.textContent = item['name'];
+                            select.appendChild(opt);
                         }
-                      
-                      
                     });
-                    
-                    
-                    
                 })
                 .catch(error => {
                     console.error('Failed to load data:', error);
