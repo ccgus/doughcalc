@@ -32,18 +32,18 @@ const { useState, useCallback, useRef, useEffect } = React;
 const h = React.createElement;
 
 const DEFAULT_INGREDIENTS = [
-  { id: "flour", name: "Bread Flour", pct: 100, locked: true },
-  { id: "water", name: "Water", pct: 68, locked: false },
-  { id: "starter", name: "Sourdough Starter", pct: 20, locked: false },
-  { id: "salt", name: "Salt", pct: 2, locked: false },
-  { id: "oil", name: "Olive Oil", pct: 3, locked: false },
+  { id: "flour", name: "Bread Flour", pct: 100, base: true },
+  { id: "water", name: "Water", pct: 68, base: false },
+  { id: "starter", name: "Sourdough Starter", pct: 20, base: false },
+  { id: "salt", name: "Salt", pct: 2, base: false },
+  { id: "oil", name: "Olive Oil", pct: 3, base: false },
 ];
 
 
 const encodeRecipe = (name, ingredients, doughWeight, doughCount) => {
   const data = {
     n: name, w: doughWeight, c: doughCount,
-    i: ingredients.map(x => ({ d: x.id, n: x.name, p: x.pct, l: x.locked ? 1 : 0 })),
+    i: ingredients.map(x => ({ d: x.id, n: x.name, p: x.pct, b: x.base ? 1 : 0 })),
   };
   return btoa(JSON.stringify(data));
 };
@@ -55,7 +55,7 @@ const decodeRecipe = (hash) => {
       name: data.n || "My Dough",
       doughWeight: data.w || 800,
       doughCount: data.c || 1,
-      ingredients: data.i.map(x => ({ id: x.d, name: x.n, pct: x.p, locked: !!x.l })),
+      ingredients: data.i.map(x => ({ id: x.d, name: x.n, pct: x.p, base: x.b !== undefined ? !!x.b : !!x.l })),
     };
   } catch { return null; }
 };
@@ -132,6 +132,11 @@ const S = {
   shareBtnIcon: { fontSize: 14 },
   shareHint: { fontSize: 11.5, color: c.inkLight, lineHeight: 1.5, fontStyle: "italic", fontFamily: "'Playfair Display', serif", maxWidth: 400, margin: "0 auto" },
   footer: { textAlign: "center", fontSize: 12, color: c.inkLight, lineHeight: 1.5, fontStyle: "italic", fontFamily: "'Playfair Display', serif", marginTop: 8 },
+  flourSummary: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 8px 6px 36px", marginBottom: 2, fontSize: 12, fontWeight: 600, color: c.inkLight },
+  flourSummaryOk: { color: c.accent },
+  flourSummaryWarn: { color: c.remove },
+  addFlourRow: { display: "flex", gap: 8, alignItems: "center", padding: "4px 8px 8px 36px" },
+  addFlourBtn: { height: 30, padding: "0 12px", borderRadius: 8, border: "1.5px dashed " + c.accentLight, background: "transparent", fontSize: 12, fontWeight: 500, color: c.accent, cursor: "pointer", fontFamily: "'Source Sans 3', sans-serif" },
 };
 
 const O = (...objs) => Object.assign({}, ...objs);
@@ -224,12 +229,44 @@ function DoughCalculator() {
     const pct = parseFloat(newPct);
     if (!name || isNaN(pct) || pct <= 0) return;
     const id = name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
-    setIngredients(prev => [...prev, { id: id, name: name, pct: pct, locked: false }]);
+    setIngredients(prev => [...prev, { id: id, name: name, pct: pct, base: false }]);
     setNewName(""); setNewPct("");
   }, [newName, newPct]);
 
+  const [newFlourName, setNewFlourName] = useState("");
+  const [newFlourPct, setNewFlourPct] = useState("");
+  const [addingFlour, setAddingFlour] = useState(false);
+
+  const addFlour = useCallback(() => {
+    const name = newFlourName.trim();
+    const pct = parseFloat(newFlourPct);
+    if (!name || isNaN(pct) || pct <= 0) {
+      return;
+    }
+    const id = name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
+    setIngredients(prev => {
+      const firstBaseIdx = prev.findIndex(ing => ing.base);
+      const lastBaseIdx = prev.reduce((last, ing, i) => ing.base ? i : last, 0);
+      const next = [...prev];
+      // Reduce the first flour by the new flour's percentage
+      if (firstBaseIdx !== -1) {
+        const first = next[firstBaseIdx];
+        next[firstBaseIdx] = O(first, { pct: Math.max(0, first.pct - pct) });
+      }
+      next.splice(lastBaseIdx + 1, 0, { id: id, name: name, pct: pct, base: true });
+      return next;
+    });
+    setNewFlourName("");
+    setNewFlourPct("");
+    setAddingFlour(false);
+  }, [newFlourName, newFlourPct]);
+
   const startEdit = (id, currentPct) => { setEditingId(id); setEditPct(String(currentPct)); };
   const commitEdit = (id) => { updatePct(id, editPct); setEditingId(null); };
+
+  const baseIngredients = ingredients.filter(i => i.base);
+  const baseTotal = baseIngredients.reduce((s, i) => s + i.pct, 0);
+  const baseTotalOk = Math.abs(baseTotal - 100) < 0.01;
 
   const totalWeightSingle = ingredients.reduce((s, i) => s + gram(fWeight, i.pct), 0);
   const totalWeightAll = totalWeightSingle * doughCount;
@@ -300,27 +337,25 @@ function DoughCalculator() {
       }),
     },
       h("div", { style: S.rowBar },
-        h("div", { style: O(S.rowBarFill, { width: barW + "%", opacity: ing.locked ? 0.25 : 0.12 }) })
+        h("div", { style: O(S.rowBarFill, { width: barW + "%", opacity: ing.base ? 0.25 : 0.12 }) })
       ),
       h("span", { style: S.dragHandle, title: "Drag to reorder" }, "\u2817"),
       h("span", { style: O(S.cell, { flex: 2.2 }) },
         h("span", { style: S.ingredientName }, ing.name),
-        ing.locked && h("span", { style: S.baseBadge }, "base")
+        ing.base && h("span", { style: S.baseBadge }, "flour")
       ),
       h("span", { style: O(S.cell, { flex: 0.8, justifyContent: "center" }) },
-        ing.locked
-          ? h("span", { style: S.lockedPct }, ing.pct)
-          : editingId === ing.id
-            ? h("input", {
-                type: "number", value: editPct, autoFocus: true, style: S.pctInput,
-                onChange: e => setEditPct(e.target.value),
-                onBlur: () => commitEdit(ing.id),
-                onKeyDown: e => e.key === "Enter" && commitEdit(ing.id),
-              })
-            : h("span", {
-                style: S.editablePct, title: "Click to edit",
-                onClick: () => startEdit(ing.id, ing.pct),
-              }, ing.pct)
+        editingId === ing.id
+          ? h("input", {
+              type: "number", value: editPct, autoFocus: true, style: S.pctInput,
+              onChange: e => setEditPct(e.target.value),
+              onBlur: () => commitEdit(ing.id),
+              onKeyDown: e => e.key === "Enter" && commitEdit(ing.id),
+            })
+          : h("span", {
+              style: S.editablePct, title: "Click to edit",
+              onClick: () => startEdit(ing.id, ing.pct),
+            }, ing.pct)
       ),
       h("span", { style: O(S.cell, { flex: 0.9, justifyContent: "flex-end", fontVariantNumeric: "tabular-nums" }) },
         h("span", { style: S.gramVal }, g1)
@@ -329,7 +364,7 @@ function DoughCalculator() {
         h("span", { style: S.gramValTotal }, gAll)
       ),
       h("span", { style: O(S.cell, { width: 32, justifyContent: "center" }) },
-        !ing.locked && h("button", { style: S.removeBtn, onClick: () => removeIngredient(ing.id), title: "Remove" }, "\u00d7")
+        (!ing.base || baseIngredients.length > 1) && h("button", { style: S.removeBtn, onClick: () => removeIngredient(ing.id), title: "Remove" }, "\u00d7")
       )
     );
   });
@@ -420,7 +455,36 @@ function DoughCalculator() {
           doughCount > 1 && h("span", { style: O(S.thCell, { flex: 0.9, textAlign: "right" }) }, "Total"),
           h("span", { style: O(S.thCell, { width: 32 }) })
         ),
-        ingredientRows
+        ingredientRows,
+        baseIngredients.length > 1 && h("div", {
+          style: O(S.flourSummary, baseTotalOk ? S.flourSummaryOk : S.flourSummaryWarn),
+        },
+          h("span", null, "Flour blend total:"),
+          h("span", null, baseTotal + "%" + (baseTotalOk ? "" : " (should be 100%)"))
+        ),
+        addingFlour
+          ? h("div", { style: S.addFlourRow },
+              h("input", {
+                placeholder: "Flour name", value: newFlourName, autoFocus: true,
+                style: O(S.addInput, { flex: 2, height: 30, fontSize: 12 }),
+                onChange: e => setNewFlourName(e.target.value),
+                onKeyDown: e => e.key === "Enter" && addFlour(),
+              }),
+              h("input", {
+                type: "number", placeholder: "%", value: newFlourPct,
+                style: O(S.addInput, { flex: 0.7, height: 30, fontSize: 12, textAlign: "center" }),
+                onChange: e => setNewFlourPct(e.target.value),
+                onKeyDown: e => e.key === "Enter" && addFlour(),
+              }),
+              h("button", { style: O(S.addBtn, { height: 30, fontSize: 12 }), onClick: addFlour }, "+ Add"),
+              h("button", {
+                style: O(S.removeBtn, { fontSize: 14, opacity: 0.7 }),
+                onClick: () => { setAddingFlour(false); setNewFlourName(""); setNewFlourPct(""); },
+              }, "\u00d7")
+            )
+          : h("div", { style: { padding: "4px 8px 8px 36px" } },
+              h("button", { style: S.addFlourBtn, onClick: () => setAddingFlour(true) }, "+ Add Flour Type")
+            )
       ),
 
       // Add ingredient
