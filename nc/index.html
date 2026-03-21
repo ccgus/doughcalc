@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baker's Percentage — Dough Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  input:focus { outline: none; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  ::selection { background: #c8a97e44; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 12px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useCallback, useRef, useEffect } = React;
+const h = React.createElement;
+
+const DEFAULT_INGREDIENTS = [
+  { id: "flour", name: "Bread Flour", pct: 100, locked: true },
+  { id: "water", name: "Water", pct: 68, locked: false },
+  { id: "starter", name: "Sourdough Starter", pct: 20, locked: false },
+  { id: "salt", name: "Salt", pct: 2, locked: false },
+  { id: "oil", name: "Olive Oil", pct: 3, locked: false },
+];
+
+
+const encodeRecipe = (name, ingredients, doughWeight, doughCount) => {
+  const data = {
+    n: name, w: doughWeight, c: doughCount,
+    i: ingredients.map(x => ({ d: x.id, n: x.name, p: x.pct, l: x.locked ? 1 : 0 })),
+  };
+  return btoa(JSON.stringify(data));
+};
+
+const decodeRecipe = (hash) => {
+  try {
+    const data = JSON.parse(atob(hash));
+    return {
+      name: data.n || "My Dough",
+      doughWeight: data.w || 800,
+      doughCount: data.c || 1,
+      ingredients: data.i.map(x => ({ id: x.d, name: x.n, pct: x.p, locked: !!x.l })),
+    };
+  } catch { return null; }
+};
+
+const flourWeight = (totalDough, ingredients) => {
+  const totalPct = ingredients.reduce((s, i) => s + i.pct, 0);
+  return totalDough / (totalPct / 100);
+};
+
+const gram = (flourG, pct) => Math.round(flourG * (pct / 100));
+
+// --- Colors ---
+const c = {
+  bg: "#f5f0e8", card: "#fffcf7", ink: "#3a2e24", inkLight: "#8a7c6e",
+  accent: "#b8864e", accentLight: "#c8a97e", border: "#e6ddd0",
+  warmWhite: "#fdfaf5", remove: "#c0705a",
+};
+
+// --- Styles ---
+const S = {
+  page: { minHeight: "100vh", background: "linear-gradient(145deg, " + c.bg + " 0%, #ede6d8 100%)", display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "32px 16px", fontFamily: "'Source Sans 3', sans-serif", color: c.ink, position: "relative" },
+  toast: { position: "fixed", bottom: 32, left: "50%", transform: "translateX(-50%)", background: c.ink, color: "#fff", padding: "10px 24px", borderRadius: 24, fontSize: 13, fontWeight: 500, fontFamily: "'Source Sans 3', sans-serif", zIndex: 999, animation: "toastIn 0.25s ease", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" },
+  card: { width: "100%", maxWidth: 560, background: c.card, borderRadius: 16, padding: "36px 28px 28px", boxShadow: "0 1px 3px rgba(58,46,36,0.06), 0 12px 40px rgba(58,46,36,0.08)", border: "1px solid " + c.border },
+  header: { textAlign: "center", marginBottom: 24 },
+  headerLine: { height: 1, background: "linear-gradient(90deg, transparent, " + c.accentLight + ", transparent)", margin: "12px 60px" },
+  supTitle: { fontFamily: "'Source Sans 3', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: c.accent, marginBottom: 4 },
+  title: { fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, letterSpacing: -0.5, color: c.ink, lineHeight: 1.15, cursor: "pointer" },
+  titleEditIcon: { fontSize: 16, color: c.accentLight, opacity: 0.5, fontStyle: "normal" },
+  titleInput: { fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, letterSpacing: -0.5, color: c.ink, lineHeight: 1.15, textAlign: "center", border: "none", borderBottom: "2px solid " + c.accent, background: "transparent", width: "100%", padding: "4px 0" },
+  subtitle: { fontSize: 13.5, color: c.inkLight, marginTop: 6, fontWeight: 300, lineHeight: 1.4 },
+  controlsGrid: { display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 12 },
+  controlBlock: { textAlign: "center" },
+  controlLabel: { fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: c.inkLight, marginBottom: 8, display: "block" },
+  controlRow: { display: "flex", alignItems: "center", justifyContent: "center", gap: 6 },
+  controlDivider: { width: 1, height: 50, background: c.border, alignSelf: "flex-end", marginBottom: 6 },
+  ctrlBtn: { width: 32, height: 32, borderRadius: "50%", border: "1.5px solid " + c.border, background: c.warmWhite, fontSize: 16, color: c.accent, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 300, lineHeight: 1 },
+  ctrlInput: { width: 80, height: 40, borderRadius: 10, border: "1.5px solid " + c.border, background: c.warmWhite, textAlign: "center", fontSize: 20, fontWeight: 600, fontFamily: "'Source Sans 3', sans-serif", color: c.ink, letterSpacing: -0.5 },
+  ctrlUnit: { fontSize: 14, color: c.inkLight, fontWeight: 400, marginLeft: -2 },
+  quickBtns: { display: "flex", justifyContent: "center", gap: 6, marginBottom: 16 },
+  quickBtn: { padding: "4px 12px", borderRadius: 20, border: "1px solid " + c.border, background: "transparent", fontSize: 12, color: c.inkLight, cursor: "pointer", fontFamily: "'Source Sans 3', sans-serif", fontWeight: 500 },
+  quickBtnActive: { background: c.accent, color: "#fff", borderColor: c.accent },
+  statsRibbon: { display: "flex", alignItems: "center", justifyContent: "center", gap: 20, padding: "14px 0", margin: "0 0 18px", borderTop: "1px solid " + c.border, borderBottom: "1px solid " + c.border },
+  stat: { display: "flex", flexDirection: "column", alignItems: "center", gap: 2 },
+  statValue: { fontSize: 18, fontWeight: 600, color: c.ink, fontVariantNumeric: "tabular-nums" },
+  statLabel: { fontSize: 10, fontWeight: 500, letterSpacing: 1.5, textTransform: "uppercase", color: c.inkLight },
+  statDivider: { width: 1, height: 28, background: c.border },
+  tableWrap: { marginBottom: 16 },
+  tableHeader: { display: "flex", alignItems: "center", padding: "0 8px 8px", borderBottom: "1px solid " + c.border, marginBottom: 4 },
+  thCell: { fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: c.inkLight },
+  row: { display: "flex", alignItems: "center", padding: "9px 8px", borderRadius: 8, position: "relative", overflow: "hidden" },
+  rowBar: { position: "absolute", top: 0, left: 0, bottom: 0, right: 0, pointerEvents: "none" },
+  rowBarFill: { position: "absolute", top: 0, left: 0, bottom: 0, background: c.accentLight, borderRadius: 8, transition: "width 0.3s ease" },
+  cell: { display: "flex", alignItems: "center", position: "relative", zIndex: 1 },
+  dragHandle: { width: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: c.accentLight, cursor: "grab", userSelect: "none", position: "relative", zIndex: 1, letterSpacing: 1, flexShrink: 0, touchAction: "none" },
+  ingredientName: { fontSize: 14.5, fontWeight: 500 },
+  baseBadge: { fontSize: 9, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: c.accent, background: c.accentLight + "22", padding: "2px 6px", borderRadius: 4, marginLeft: 8 },
+  lockedPct: { fontSize: 14.5, fontWeight: 600, color: c.inkLight },
+  editablePct: { fontSize: 14.5, fontWeight: 600, color: c.accent, cursor: "pointer", padding: "2px 6px", borderRadius: 6, borderBottom: "1.5px dashed " + c.accentLight },
+  pctInput: { width: 50, height: 26, borderRadius: 6, border: "1.5px solid " + c.accent, background: c.warmWhite, textAlign: "center", fontSize: 14.5, fontWeight: 600, fontFamily: "'Source Sans 3', sans-serif", color: c.ink },
+  gramVal: { fontSize: 14.5, fontWeight: 600, fontFamily: "'Source Sans 3', sans-serif" },
+  gramValTotal: { fontSize: 14.5, fontWeight: 600, fontFamily: "'Source Sans 3', sans-serif", color: c.accent },
+  removeBtn: { background: "none", border: "none", fontSize: 18, color: c.remove, cursor: "pointer", opacity: 0.5, padding: "0 4px", lineHeight: 1 },
+  addSection: { marginBottom: 18 },
+  addRow: { display: "flex", gap: 8, alignItems: "center" },
+  addInput: { height: 36, borderRadius: 8, border: "1.5px solid " + c.border, background: c.warmWhite, padding: "0 12px", fontSize: 13.5, fontFamily: "'Source Sans 3', sans-serif", color: c.ink },
+  addBtn: { height: 36, padding: "0 14px", borderRadius: 8, border: "none", background: c.accent, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Source Sans 3', sans-serif", whiteSpace: "nowrap" },
+  presetSection: { textAlign: "center", marginBottom: 16, paddingTop: 14, borderTop: "1px solid " + c.border },
+  sectionLabel: { fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: c.inkLight, marginBottom: 10 },
+  presetRow: { display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" },
+  presetBtn: { padding: "7px 16px", borderRadius: 20, border: "1.5px solid " + c.border, background: "transparent", fontSize: 13, fontWeight: 500, color: c.ink, cursor: "pointer", fontFamily: "'Source Sans 3', sans-serif" },
+  shareSection: { textAlign: "center", marginBottom: 16, paddingTop: 14, borderTop: "1px solid " + c.border },
+  shareRow: { display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginBottom: 8 },
+  shareBtn: { padding: "8px 16px", borderRadius: 10, border: "1.5px solid " + c.border, background: c.warmWhite, fontSize: 13, fontWeight: 500, color: c.ink, cursor: "pointer", fontFamily: "'Source Sans 3', sans-serif", display: "flex", alignItems: "center", gap: 6 },
+  shareBtnIcon: { fontSize: 14 },
+  shareHint: { fontSize: 11.5, color: c.inkLight, lineHeight: 1.5, fontStyle: "italic", fontFamily: "'Playfair Display', serif", maxWidth: 400, margin: "0 auto" },
+  footer: { textAlign: "center", fontSize: 12, color: c.inkLight, lineHeight: 1.5, fontStyle: "italic", fontFamily: "'Playfair Display', serif", marginTop: 8 },
+};
+
+const O = (...objs) => Object.assign({}, ...objs);
+
+function DoughCalculator() {
+  const loadFromHash = () => {
+    if (window.location.hash.length > 1) {
+      const decoded = decodeRecipe(window.location.hash.slice(1));
+      if (decoded) return decoded;
+    }
+    return null;
+  };
+
+  const saved = loadFromHash();
+
+  const [recipeName, setRecipeName] = useState(saved ? saved.name : "My Dough");
+  const [ingredients, setIngredients] = useState(saved ? saved.ingredients : DEFAULT_INGREDIENTS);
+  const [doughWeight, setDoughWeight] = useState(saved ? saved.doughWeight : 800);
+  const [doughCount, setDoughCount] = useState(saved ? saved.doughCount : 1);
+  const [newName, setNewName] = useState("");
+  const [newPct, setNewPct] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editPct, setEditPct] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
+
+  const [presets, setPresets] = useState({});
+  const [dragIdx, setDragIdx] = useState(null);
+  const [overIdx, setOverIdx] = useState(null);
+  const touchStartY = useRef(null);
+  const rowRefs = useRef([]);
+
+  useEffect(() => {
+    fetch("presets.json")
+      .then(r => r.json())
+      .then(data => { setPresets(data); });
+  }, []);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2500);
+  };
+
+  const handleDragStart = (idx) => { setDragIdx(idx); setOverIdx(idx); };
+  const handleDragOver = (e, idx) => { e.preventDefault(); if (dragIdx !== null) setOverIdx(idx); };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (dragIdx === null || overIdx === null || dragIdx === overIdx) { setDragIdx(null); setOverIdx(null); return; }
+    setIngredients(prev => { const next = [...prev]; const [moved] = next.splice(dragIdx, 1); next.splice(overIdx, 0, moved); return next; });
+    setDragIdx(null); setOverIdx(null);
+  };
+  const handleDragEnd = () => { setDragIdx(null); setOverIdx(null); };
+
+  const handleTouchStart = (e, idx) => { touchStartY.current = e.touches[0].clientY; handleDragStart(idx); };
+  const handleTouchMove = (e) => {
+    if (dragIdx === null) return;
+    const touchY = e.touches[0].clientY;
+    for (let i = 0; i < rowRefs.current.length; i++) {
+      const el = rowRefs.current[i];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (touchY >= rect.top && touchY <= rect.bottom) { setOverIdx(i); break; }
+    }
+  };
+  const handleTouchEnd = () => {
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      setIngredients(prev => { const next = [...prev]; const [moved] = next.splice(dragIdx, 1); next.splice(overIdx, 0, moved); return next; });
+    }
+    setDragIdx(null); setOverIdx(null); touchStartY.current = null;
+  };
+
+  const totalDough = doughWeight * doughCount;
+  const fWeight = flourWeight(doughWeight, ingredients);
+  const fWeightTotal = flourWeight(totalDough, ingredients);
+
+  const updatePct = useCallback((id, val) => {
+    const v = parseFloat(val);
+    if (isNaN(v) || v < 0) return;
+    setIngredients(prev => prev.map(i => i.id === id ? O(i, { pct: v }) : i));
+  }, []);
+
+  const removeIngredient = useCallback((id) => {
+    setIngredients(prev => prev.filter(i => i.id !== id));
+  }, []);
+
+  const addIngredient = useCallback(() => {
+    const name = newName.trim();
+    const pct = parseFloat(newPct);
+    if (!name || isNaN(pct) || pct <= 0) return;
+    const id = name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now();
+    setIngredients(prev => [...prev, { id: id, name: name, pct: pct, locked: false }]);
+    setNewName(""); setNewPct("");
+  }, [newName, newPct]);
+
+  const startEdit = (id, currentPct) => { setEditingId(id); setEditPct(String(currentPct)); };
+  const commitEdit = (id) => { updatePct(id, editPct); setEditingId(null); };
+
+  const totalWeightSingle = ingredients.reduce((s, i) => s + gram(fWeight, i.pct), 0);
+  const totalWeightAll = totalWeightSingle * doughCount;
+  const hydration = (() => { const w = ingredients.find(i => i.id === "water"); return w ? w.pct : 0; })();
+
+  const shareUrl = () => {
+    const hash = encodeRecipe(recipeName, ingredients, doughWeight, doughCount);
+    const url = window.location.origin + window.location.pathname + "#" + hash;
+    navigator.clipboard.writeText(url).then(
+      () => showToast("Link copied to clipboard!"),
+      () => showToast("Couldn't copy \u2014 check permissions")
+    );
+  };
+
+  const bookmarklet = () => {
+    const hash = encodeRecipe(recipeName, ingredients, doughWeight, doughCount);
+    const url = window.location.origin + window.location.pathname + "#" + hash;
+    const code = "javascript:void(window.open('" + url + "'))";
+    navigator.clipboard.writeText(code).then(
+      () => showToast("Bookmarklet copied! Paste as a bookmark URL."),
+      () => showToast("Couldn't copy \u2014 check permissions")
+    );
+  };
+
+  const exportText = () => {
+    let txt = recipeName + "\n" + "\u2550".repeat(recipeName.length) + "\n";
+    txt += doughCount + " \u00d7 " + doughWeight + "g doughs (" + totalWeightAll + "g total)\n";
+    txt += "Hydration: " + hydration + "%\n\n";
+    txt += "Ingredient".padEnd(22) + "  %".padStart(6) + "  Each".padStart(8) + "  Total".padStart(8) + "\n";
+    txt += "\u2500".repeat(22) + " " + "\u2500".repeat(6) + " " + "\u2500".repeat(8) + " " + "\u2500".repeat(8) + "\n";
+    ingredients.forEach(ing => {
+      const g1 = gram(fWeight, ing.pct);
+      const gAll = gram(fWeightTotal, ing.pct);
+      txt += ing.name.padEnd(22) + String(ing.pct + "%").padStart(6) + String(g1 + "g").padStart(8) + String(gAll + "g").padStart(8) + "\n";
+    });
+    navigator.clipboard.writeText(txt).then(
+      () => showToast("Recipe text copied!"),
+      () => showToast("Couldn't copy \u2014 check permissions")
+    );
+  };
+
+  // --- Render helpers ---
+  const ingredientRows = ingredients.map((ing, idx) => {
+    const g1 = gram(fWeight, ing.pct);
+    const gAll = gram(fWeightTotal, ing.pct);
+    const barW = Math.min(100, (ing.pct / 100) * 100);
+    const isDragging = dragIdx === idx;
+    const isOver = overIdx === idx && dragIdx !== null && dragIdx !== idx;
+
+    return h("div", {
+      key: ing.id,
+      ref: el => rowRefs.current[idx] = el,
+      draggable: true,
+      onDragStart: () => handleDragStart(idx),
+      onDragOver: e => handleDragOver(e, idx),
+      onDrop: handleDrop,
+      onDragEnd: handleDragEnd,
+      onTouchStart: e => handleTouchStart(e, idx),
+      onTouchMove: e => handleTouchMove(e),
+      onTouchEnd: handleTouchEnd,
+      style: O(S.row, {
+        animation: dragIdx === null ? ("fadeIn 0.3s ease " + (idx * 0.04) + "s both") : "none",
+        opacity: isDragging ? 0.45 : 1,
+        borderTop: isOver && overIdx < dragIdx ? ("2px solid " + c.accent) : "2px solid transparent",
+        borderBottom: isOver && overIdx > dragIdx ? ("2px solid " + c.accent) : "2px solid transparent",
+        transition: "opacity 0.15s, border-color 0.15s",
+        cursor: "default",
+      }),
+    },
+      h("div", { style: S.rowBar },
+        h("div", { style: O(S.rowBarFill, { width: barW + "%", opacity: ing.locked ? 0.25 : 0.12 }) })
+      ),
+      h("span", { style: S.dragHandle, title: "Drag to reorder" }, "\u2817"),
+      h("span", { style: O(S.cell, { flex: 2.2 }) },
+        h("span", { style: S.ingredientName }, ing.name),
+        ing.locked && h("span", { style: S.baseBadge }, "base")
+      ),
+      h("span", { style: O(S.cell, { flex: 0.8, justifyContent: "center" }) },
+        ing.locked
+          ? h("span", { style: S.lockedPct }, ing.pct)
+          : editingId === ing.id
+            ? h("input", {
+                type: "number", value: editPct, autoFocus: true, style: S.pctInput,
+                onChange: e => setEditPct(e.target.value),
+                onBlur: () => commitEdit(ing.id),
+                onKeyDown: e => e.key === "Enter" && commitEdit(ing.id),
+              })
+            : h("span", {
+                style: S.editablePct, title: "Click to edit",
+                onClick: () => startEdit(ing.id, ing.pct),
+              }, ing.pct)
+      ),
+      h("span", { style: O(S.cell, { flex: 0.9, justifyContent: "flex-end", fontVariantNumeric: "tabular-nums" }) },
+        h("span", { style: S.gramVal }, g1)
+      ),
+      doughCount > 1 && h("span", { style: O(S.cell, { flex: 0.9, justifyContent: "flex-end", fontVariantNumeric: "tabular-nums" }) },
+        h("span", { style: S.gramValTotal }, gAll)
+      ),
+      h("span", { style: O(S.cell, { width: 32, justifyContent: "center" }) },
+        !ing.locked && h("button", { style: S.removeBtn, onClick: () => removeIngredient(ing.id), title: "Remove" }, "\u00d7")
+      )
+    );
+  });
+
+  return h("div", { style: S.page },
+    toast && h("div", { style: S.toast }, toast),
+    h("div", { style: S.card },
+
+      // Header
+      h("div", { style: S.header },
+        h("div", { style: S.headerLine }),
+        h("p", { style: S.supTitle }, "Baker\u2019s Percentage"),
+        editingName
+          ? h("input", {
+              value: recipeName, autoFocus: true, style: S.titleInput,
+              onChange: e => setRecipeName(e.target.value),
+              onBlur: () => setEditingName(false),
+              onKeyDown: e => e.key === "Enter" && setEditingName(false),
+            })
+          : h("h1", { style: S.title, onClick: () => setEditingName(true), title: "Click to rename" },
+              recipeName,
+              h("span", { style: S.titleEditIcon }, " \u270e")
+            ),
+        h("p", { style: S.subtitle }, "All ratios relative to flour weight \u2014 the baker\u2019s lingua franca."),
+        h("div", { style: S.headerLine })
+      ),
+
+      // Controls
+      h("div", { style: S.controlsGrid },
+        h("div", { style: S.controlBlock },
+          h("label", { style: S.controlLabel }, "Weight per Dough"),
+          h("div", { style: S.controlRow },
+            h("button", { style: S.ctrlBtn, onClick: () => setDoughWeight(d => Math.max(50, d - 50)) }, "\u2212"),
+            h("input", { type: "number", value: doughWeight, style: S.ctrlInput, onChange: e => setDoughWeight(Math.max(1, Number(e.target.value) || 0)) }),
+            h("span", { style: S.ctrlUnit }, "g"),
+            h("button", { style: S.ctrlBtn, onClick: () => setDoughWeight(d => d + 50) }, "+")
+          )
+        ),
+        h("div", { style: S.controlDivider }),
+        h("div", { style: S.controlBlock },
+          h("label", { style: S.controlLabel }, "Number of Doughs"),
+          h("div", { style: S.controlRow },
+            h("button", { style: S.ctrlBtn, onClick: () => setDoughCount(c => Math.max(1, c - 1)) }, "\u2212"),
+            h("input", { type: "number", value: doughCount, style: O(S.ctrlInput, { width: 64 }), onChange: e => setDoughCount(Math.max(1, Math.round(Number(e.target.value)) || 1)) }),
+            h("button", { style: S.ctrlBtn, onClick: () => setDoughCount(c => c + 1) }, "+")
+          )
+        )
+      ),
+
+      // Quick weights
+      h("div", { style: S.quickBtns },
+        [250, 500, 800, 1000].map(w =>
+          h("button", {
+            key: w,
+            onClick: () => setDoughWeight(w),
+            style: O(S.quickBtn, doughWeight === w ? S.quickBtnActive : {}),
+          }, w + "g")
+        )
+      ),
+
+      // Stats
+      h("div", { style: S.statsRibbon },
+        h("div", { style: S.stat },
+          h("span", { style: S.statValue }, hydration + "%"),
+          h("span", { style: S.statLabel }, "hydration")
+        ),
+        h("div", { style: S.statDivider }),
+        h("div", { style: S.stat },
+          h("span", { style: S.statValue }, totalWeightSingle + "g"),
+          h("span", { style: S.statLabel }, "per dough")
+        ),
+        doughCount > 1 && h(React.Fragment, null,
+          h("div", { style: S.statDivider }),
+          h("div", { style: S.stat },
+            h("span", { style: O(S.statValue, { color: c.accent }) }, totalWeightAll + "g"),
+            h("span", { style: S.statLabel }, "total (" + doughCount + "\u00d7)")
+          )
+        )
+      ),
+
+      // Table
+      h("div", { style: S.tableWrap },
+        h("div", { style: S.tableHeader },
+          h("span", { style: O(S.thCell, { width: 28 }) }),
+          h("span", { style: O(S.thCell, { flex: 2.2 }) }, "Ingredient"),
+          h("span", { style: O(S.thCell, { flex: 0.8, textAlign: "center" }) }, "%"),
+          h("span", { style: O(S.thCell, { flex: 0.9, textAlign: "right" }) }, doughCount > 1 ? "Each" : "Grams"),
+          doughCount > 1 && h("span", { style: O(S.thCell, { flex: 0.9, textAlign: "right" }) }, "Total"),
+          h("span", { style: O(S.thCell, { width: 32 }) })
+        ),
+        ingredientRows
+      ),
+
+      // Add ingredient
+      h("div", { style: S.addSection },
+        h("div", { style: S.addRow },
+          h("input", { placeholder: "Ingredient name", value: newName, style: O(S.addInput, { flex: 2 }), onChange: e => setNewName(e.target.value), onKeyDown: e => e.key === "Enter" && addIngredient() }),
+          h("input", { type: "number", placeholder: "%", value: newPct, style: O(S.addInput, { flex: 0.7, textAlign: "center" }), onChange: e => setNewPct(e.target.value), onKeyDown: e => e.key === "Enter" && addIngredient() }),
+          h("button", { style: S.addBtn, onClick: addIngredient }, "+ Add")
+        )
+      ),
+
+      // Presets
+      h("div", { style: S.presetSection },
+        h("p", { style: S.sectionLabel }, "Quick Presets"),
+        h("div", { style: S.presetRow },
+          Object.entries(presets).map(([key, val]) =>
+            h("button", {
+              key: key, style: S.presetBtn,
+              onClick: () => { setIngredients(val); setRecipeName(key.charAt(0).toUpperCase() + key.slice(1)); },
+            }, key.charAt(0).toUpperCase() + key.slice(1))
+          )
+        )
+      ),
+
+      // Share
+      h("div", { style: S.shareSection },
+        h("p", { style: S.sectionLabel }, "Share & Save"),
+        h("div", { style: S.shareRow },
+          h("button", { style: S.shareBtn, onClick: shareUrl },
+            h("span", { style: S.shareBtnIcon }, "\ud83d\udd17"), " Copy Link"
+          ),
+          h("button", { style: S.shareBtn, onClick: exportText },
+            h("span", { style: S.shareBtnIcon }, "\ud83d\udccb"), " Copy as Text"
+          ),
+          h("button", { style: S.shareBtn, onClick: bookmarklet },
+            h("span", { style: S.shareBtnIcon }, "\ud83d\udd16"), " Bookmarklet"
+          )
+        ),
+        h("p", { style: S.shareHint }, "Link encodes the full recipe in the URL \u2014 no server needed. Bookmarklet can be pasted as a bookmark URL to reopen this recipe anytime.")
+      ),
+
+      h("p", { style: S.footer }, "Click any percentage to edit \u00b7 drag \u2817 to reorder \u00b7 click the title to rename")
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(h(DoughCalculator));
+</script>
+</body>
+</html>
