@@ -1,0 +1,31 @@
+{
+  "sourdough": [
+    { "id": "flour", "name": "Bread Flour", "pct": 100, "base": true },
+    { "id": "water", "name": "Water", "pct": 65, "base": false },
+    { "id": "starter", "name": "Sourdough Starter", "pct": 20, "base": false },
+    { "id": "salt", "name": "Salt", "pct": 2, "base": false }
+  ],
+  "pizza": [
+    { "id": "flour", "name": "Bread Flour", "pct": 100, "base": true },
+    { "id": "water", "name": "Water", "pct": 62, "base": false },
+    { "id": "yeast", "name": "Instant Yeast", "pct": 1, "base": false },
+    { "id": "salt", "name": "Salt", "pct": 2, "base": false },
+    { "id": "oil", "name": "Olive Oil", "pct": 4, "base": false },
+    { "id": "sugar", "name": "Sugar", "pct": 2, "base": false }
+  ],
+  "enriched": [
+    { "id": "flour", "name": "Bread Flour", "pct": 100, "base": true },
+    { "id": "water", "name": "Water", "pct": 58, "base": false },
+    { "id": "butter", "name": "Butter", "pct": 8, "base": false },
+    { "id": "sugar", "name": "Sugar", "pct": 10, "base": false },
+    { "id": "milk", "name": "Milk Powder", "pct": 4, "base": false },
+    { "id": "yeast", "name": "Instant Yeast", "pct": 1.5, "base": false },
+    { "id": "salt", "name": "Salt", "pct": 2, "base": false }
+  ],
+  "ciabatta": [
+    { "id": "flour", "name": "Tipo 00 Flour", "pct": 100, "base": true },
+    { "id": "water", "name": "Water", "pct": 72, "base": false },
+    { "id": "starter", "name": "Sourdough Starter", "pct": 15, "base": false },
+    { "id": "salt", "name": "Salt", "pct": 2.5, "base": false }
+  ]
+}
